@@ -9,6 +9,8 @@ services:
 
   api:
     image: rschweppes/chat-api
+    ports:
+      - 8080:8080
     links:
       - db:db
     depends_on:
@@ -23,8 +25,6 @@ services:
 
   front:
     image: rschweppes/chat-front
-    depends_on:
-      - api
   
   nginx:
     image: nginx:1.10-alpine
@@ -36,5 +36,7 @@ services:
       - front:front
       - api:api
     depends_on:
+      - front
+    volumes_from:
       - front
     
