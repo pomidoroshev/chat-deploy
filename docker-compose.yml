@@ -1,0 +1,40 @@
+version: '2'
+services:
+  db:
+    image: rschweppes/postgres
+    environment:
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: chat
+
+  api:
+    image: rschweppes/chat-api
+    links:
+      - db:db
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: docker
+      DB_PASSWORD: docker
+      DB_NAME: chat
+    command: bash -c "./wait-for-it.sh db:5432 && alembic upgrade head && python main.py"
+
+  front:
+    image: rschweppes/chat-front
+    depends_on:
+      - api
+  
+  nginx:
+    image: nginx:1.10-alpine
+    ports:
+      - 80:80
+    volumes:
+      - .:/etc/nginx/conf.d
+    links:
+      - front:front
+      - api:api
+    depends_on:
+      - front
+    
